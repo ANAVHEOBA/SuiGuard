@@ -1,22 +1,22 @@
 # SuiGuard Deployment Summary
 
-**Date:** 2025-11-16
-**Network:** Sui Devnet
+**Date:** 2025-11-23
+**Network:** Sui Testnet
+**Deployer:** `0xa85516a9b5ac7ab09f02b18639b8d3e07d8d3440a05babea4968b031076f2abe`
 
 ---
 
-## Package Split Due to Size Limits
+## Latest Deployment
 
-The SuiGuard project exceeded Sui's 100 KB package size limit (105.7 KB), so it was split into two packages:
+### SuiGuard Main Package
 
-### Package 1: SuiGuard Main Package (UPGRADED)
-
-**Package ID:** `0xe1c2bde5a472255d5ae5f03a718b4f58eabd06c22540101eac89ab3949347134`
-**Version:** 3
-**Previous Package ID:** `0xde6fc70ce19e54062b2363ec83287c7b07f611139e371e09245ce2a93446ce39` (Deprecated)
-**Size:** 82.17 KB
+**Package ID:** `0x8feb35e2c1f3835a795d9d227cfd2b08042c4118b437b53a183037fee974f802`
+**UpgradeCap:** `0x335308317122ab7b531de93d7fcb48a6582b49521bdee18d50c4741df73d512c`
+**Version:** 1
+**Previous Package ID:** `0x6d0b40c211463251e6ef066bb45988472d2005424eb403c4e06f6c0986642b89` (Devnet - Deprecated)
+**Size:** ~82 KB
 **Modules:** 47
-**Gas Used:** ~0.8 SUI
+**Gas Used:** ~0.71 SUI
 
 **Includes:**
 - ✅ Bounty Program Management (with updated validation)
@@ -31,17 +31,19 @@ The SuiGuard project exceeded Sui's 100 KB package size limit (105.7 KB), so it 
 - ✅ Walrus & Seal Integration
 
 **Key Updates:**
-- ✨ **NEW**: Minimum escrow increased to 10 SUI
+- ✨ **NEW**: Minimum escrow reduced to **0.1 SUI** (for testnet ease of use)
 - ✨ **NEW**: Escrow must cover critical tier payout amount
-- ✨ **NEW**: Validation: `escrow >= max(10 SUI, critical_amount)`
+- ✨ **NEW**: Validation: `escrow >= max(0.1 SUI, critical_amount)`
 
-### Package 2: SuiGuard Communications Package (NEW)
+### Package 2: SuiGuard Communications Package
 
-**Package ID:** `0xe9aa6f069e2ee7692b67a7a76e1bc4034d9b21c38be22040bd5783e10d38d9e9`
+**Package ID:** `0xd39ed27538e866ae51985701e88417b70bea9756bab5d59c622083db84bda80a`
+**UpgradeCap:** `0xd1b2b891e33af1d0cb643de52c4797da04cd8d19a0dc89747273b83945ed27fd`
 **Version:** 1
-**Size:** 19.42 KB
+**Previous Package ID:** `0x5a9602eb8e40a944b039e5fecc416ed3717e6d83facdcb868cf399843777ff83` (Devnet - Deprecated)
+**Size:** ~17 KB
 **Modules:** 10
-**Gas Used:** 0.174 SUI
+**Gas Used:** ~0.17 SUI
 
 **Includes:**
 - ✅ Messaging System (Direct & Group Conversations)
@@ -54,40 +56,56 @@ The SuiGuard project exceeded Sui's 100 KB package size limit (105.7 KB), so it 
 
 ## Shared Objects
 
+⚠️ **Note:** Shared objects are created during package initialization. To obtain these object IDs:
+
+1. **View deployment transaction** on Sui Explorer to find created objects
+2. **Query package events** for initialization events
+3. **Use first interaction** - object IDs will be visible in transaction results
+
+**Sui Explorer (Testnet):**
+- Main Package: https://testnet.suivision.xyz/package/0x8feb35e2c1f3835a795d9d227cfd2b08042c4118b437b53a183037fee974f802
+- Communications: https://testnet.suivision.xyz/package/0xd39ed27538e866ae51985701e88417b70bea9756bab5d59c622083db84bda80a
+
 ### Main Package Objects
 
-| Object | Object ID |
-|--------|-----------|
-| **TriageRegistry** | `0x2fcc5c7b3c0e5829c4db79c11a28a0ecbe59b24e26edfc8b8e63d798d29a3a8d` |
-| **BountyRegistry** | `0x449e22d9e7c8e4f0965c58cdd9a65bcdd9e3595e49eb89a7f2ea2e6a44a9e3ee` |
-| **DuplicateRegistry** | `0x4cab08faf99e3f32f093be27cb85bb5a8dccd3b5ac4e73da1cfb9c34bb49896f` |
-| **NautilusRegistry** | `0x7c2dcfe5e8bf26f0de4d86b74f44c2ce5cf4e04a6e8c03faa0f3cc8b9c94cc53` |
-| **Leaderboard** | `0xbe50b13bea60e7695d9ca02447e53c745438abdc9c49025e2514e42a9d773a63` |
-| **ArchiveRegistry** | `0xe81019ddc61bcd3f0e10d2918b4fb0fc31fb918b2696c9aaac99acd836c294ad` |
-| **PlatformStatistics** | `0xefd4e8ba3ab0357eb25760bacf5bb22bb31343ca1c07c5a94b16a8dd194d45ab` |
+| Object | Type | Object ID |
+|--------|------|-----------|
+| **BountyRegistry (ProgramRegistry)** | `suiguard::bounty_registry::ProgramRegistry` | *Obtain from init tx* |
+| **TriageRegistry** | `suiguard::triage_types::TriageRegistry` | *Obtain from init tx* |
+| **DuplicateRegistry** | `suiguard::duplicate_registry::DuplicateRegistry` | *Obtain from init tx* |
+| **ArchiveRegistry** | `suiguard::archive_types::ArchiveRegistry` | *Obtain from init tx* |
+| **Leaderboard** | `suiguard::statistics_types::Leaderboard` | *Obtain from init tx* |
+| **NautilusRegistry** | `suiguard::nautilus_registry::EnclaveRegistry` | *Obtain from init tx* |
+| **PlatformStatistics** | `suiguard::statistics_types::PlatformStatistics` | *Obtain from init tx* |
 
 ### Communications Package Objects
 
-| Object | Object ID |
-|--------|-----------|
-| **ConversationRegistry** | `0x186ad8881d34c449372d89602983c3098dc798ad6566ceb8236a33b2d6fd8219` |
-| **ForumRegistry** | `0x77edb656283f355a94d275887dcf0bd20d94d015e4c5683733b804ee567a6694` |
-| **VoteRecord** | `0x7f5d27300c7b8742b976123bea5e7d6b282edb4c6a789b78b773966244d2e5e9` |
+| Object | Type | Object ID |
+|--------|------|-----------|
+| **ConversationRegistry** | `suiguard_communications::messaging_types::ConversationRegistry` | *Obtain from init tx* |
+| **ForumRegistry** | `suiguard_communications::forum_types::ForumRegistry` | *Obtain from init tx* |
 
-### Upgrade Capabilities
+### Upgrade Capabilities (Owned)
 
 | Package | UpgradeCap ID |
 |---------|---------------|
-| **Main Package** | `0x6d4f363c66af83c72f62050b7786cb080d4a4f608fae0c6871c852d2b876ddb1` |
-| **Communications** | `0x7a68b615cc54b28d20c46180da8dcc5c3f53d97e6ad268b4541f0b0d7ae89360` |
+| **Main Package** | `0x335308317122ab7b531de93d7fcb48a6582b49521bdee18d50c4741df73d512c` |
+| **Communications** | `0xd1b2b891e33af1d0cb643de52c4797da04cd8d19a0dc89747273b83945ed27fd` |
+
+### Admin Capabilities (Owned)
+
+| Capability | Object ID |
+|------------|-----------|
+| **Nautilus AdminCap** | `0x50e62a5675ac97606914917ed6cfec86cdb3a34157cf392eb65f5350e40ce2bb` |
+| **Triage EmergencyAdminCap** | `0xdfb755250089549e951dca1eaf5ae100f90ed84968b8ea35ed015126f182e993` |
 
 ---
 
 ## Total Deployment Cost
 
-- **Main Package Upgrade:** ~0.8 SUI
-- **Communications Package:** 0.174 SUI
-- **Total:** ~0.974 SUI
+- **Main Package:** ~0.71 SUI (Storage: 0.703965200 SUI, Compute: 0.007 SUI)
+- **Communications Package:** ~0.17 SUI (Storage: 0.173143200 SUI, Compute: 0.002 SUI)
+- **Total:** ~0.88 SUI
 
 ---
 
@@ -95,35 +113,35 @@ The SuiGuard project exceeded Sui's 100 KB package size limit (105.7 KB), so it 
 
 ### For Frontend Developers
 
-1. **Update Main Package ID** from `0xde6fc...` to `0xe1c2b...` for:
-   - Bounty operations
-   - Report submissions
-   - Triage voting
-   - Payout claims
-   - All core functionality
+**IMPORTANT:** Deployed to **Testnet** (previously on Devnet). All IDs have changed.
 
-2. **Use NEW Communications Package** `0xe9aa...` for:
-   - Messaging functions
-   - Forum functions
-   - Module names changed from `suiguard::` to `suiguard_comms::`
+1. **Update Main Package ID** to `0x8feb35e2c1f3835a795d9d227cfd2b08042c4118b437b53a183037fee974f802`
 
-3. **Updated Documentation:**
+2. **Update Communications Package ID** to `0xd39ed27538e866ae51985701e88417b70bea9756bab5d59c622083db84bda80a`
+
+3. **Update Network** - Switch from Devnet to **Testnet**
+   - RPC URL: `https://fullnode.testnet.sui.io`
+   - Explorer: `https://testnet.suivision.xyz` or `https://suiscan.xyz/testnet`
+
+4. **Update ALL Shared Object IDs** - Obtain from deployment transaction:
+   - Main Package: BountyRegistry, TriageRegistry, DuplicateRegistry, ArchiveRegistry, Leaderboard, NautilusRegistry, PlatformStatistics
+   - Communications: ConversationRegistry, ForumRegistry
+
+5. **Update Constants:**
+   - **Minimum Bounty Escrow:** 0.1 SUI (100_000_000 MIST) - **reduced from 10 SUI**
+   - Minimum Payout: 1 SUI (unchanged)
+
+6. **Updated Documentation:**
    - Main package: `FRONTEND_INTEGRATION.md`
-   - Communications: `MESSAGING_FORUM_INTEGRATION.md`
+   - Testnet-specific: `TESTNET_DEPLOYMENT.md`
 
-### Breaking Changes
+### What Changed
 
-- Module paths for messaging/forum changed:
-  - OLD: `suiguard::messaging_api`
-  - NEW: `suiguard_comms::messaging_api`
-
-- ConversationRegistry, ForumRegistry, VoteRecord now in separate package
-
-### No Breaking Changes For
-
-- All bounty, triage, reputation, payout functionality remains the same
-- Existing shared object IDs remain valid
-- Transaction structure unchanged (except package ID)
+- **Network**: Moved from Devnet to Testnet
+- **Minimum Escrow**: Reduced from 10 SUI to 0.1 SUI (for easier testing)
+- **Package IDs**: All new package IDs and object IDs
+- **Module structure**: Unchanged - same function signatures
+- **Transaction structure**: Unchanged - only IDs need updating
 
 ---
 
@@ -131,30 +149,43 @@ The SuiGuard project exceeded Sui's 100 KB package size limit (105.7 KB), so it 
 
 - [x] Main package builds under 100 KB limit
 - [x] Communications package builds successfully
-- [x] Main package upgraded successfully
-- [x] Communications package deployed successfully
-- [x] All shared objects created
+- [x] Main package deployed to testnet successfully
+- [x] Communications package deployed to testnet successfully
+- [x] All shared objects created (obtain IDs from init tx)
 - [x] UpgradeCaps secured
 - [x] Documentation updated
+- [ ] Shared object IDs documented (after first interaction)
+- [ ] Test bounty creation with 0.1 SUI minimum
+- [ ] Test bug report submission
+- [ ] Test all core functionality on testnet
 
 ---
 
 ## Explorer Links
 
-**Main Package:** https://suiscan.xyz/devnet/object/0xe1c2bde5a472255d5ae5f03a718b4f58eabd06c22540101eac89ab3949347134
+**Sui Explorer (Testnet):**
 
-**Communications Package:** https://suiscan.xyz/devnet/object/0xe9aa6f069e2ee7692b67a7a76e1bc4034d9b21c38be22040bd5783e10d38d9e9
+- **Main Package:** https://testnet.suivision.xyz/package/0x8feb35e2c1f3835a795d9d227cfd2b08042c4118b437b53a183037fee974f802
+- **Communications Package:** https://testnet.suivision.xyz/package/0xd39ed27538e866ae51985701e88417b70bea9756bab5d59c622083db84bda80a
+
+**SuiScan (Testnet):**
+
+- **Main Package:** https://suiscan.xyz/testnet/object/0x8feb35e2c1f3835a795d9d227cfd2b08042c4118b437b53a183037fee974f802
+- **Communications Package:** https://suiscan.xyz/testnet/object/0xd39ed27538e866ae51985701e88417b70bea9756bab5d59c622083db84bda80a
 
 ---
 
 ## Next Steps
 
-1. Update frontend to use new package IDs
-2. Test messaging & forum functionality
-3. Test bounty creation with new 10 SUI minimum
-4. Verify all events are emitting correctly
-5. Update any hardcoded package IDs in tests
+1. **Obtain Shared Object IDs** - Check deployment transaction or make first contract call
+2. **Update frontend** to use new testnet package IDs and network
+3. **Update constants** - Minimum bounty is now 0.1 SUI (not 10 SUI)
+4. **Test bounty creation** with reduced 0.1 SUI minimum
+5. **Test messaging & forum** functionality
+6. **Verify all events** are emitting correctly
+7. **Update any hardcoded** package IDs in tests
+8. **Get testnet SUI** from faucet for testing: https://faucet.sui.io
 
 ---
 
-**Deployment Status:** ✅ **SUCCESSFUL**
+**Deployment Status:** ✅ **SUCCESSFUL ON TESTNET**

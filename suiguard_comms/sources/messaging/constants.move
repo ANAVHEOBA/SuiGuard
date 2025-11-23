@@ -9,8 +9,8 @@ module suiguard::constants {
     public fun severity_informational(): u8 { 4 }
 
     // ========== Minimum Amounts ==========
-    /// Minimum escrow amount: 0.1 SUI (0.1 * 10^9 MIST)
-    public fun min_escrow_amount(): u64 { 100_000_000 }
+    /// Minimum escrow amount: 10 SUI (10 * 10^9 MIST)
+    public fun min_escrow_amount(): u64 { 10_000_000_000 }
 
     /// Minimum bounty payout: 1 SUI
     public fun min_payout_amount(): u64 { 1_000_000_000 }

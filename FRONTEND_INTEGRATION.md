@@ -2,41 +2,58 @@
 
 ## Deployment Information
 
-**Network:** Sui Devnet
-**Package ID:** `0xe1c2bde5a472255d5ae5f03a718b4f58eabd06c22540101eac89ab3949347134` (Version 3)
-**Previous Package ID:** `0xde6fc70ce19e54062b2363ec83287c7b07f611139e371e09245ce2a93446ce39` (Deprecated)
-**Last Updated:** 2025-11-16
-**Total Gas Used:** ~1.2 SUI
+**Network:** Sui Testnet
+**Package ID:** `0x8feb35e2c1f3835a795d9d227cfd2b08042c4118b437b53a183037fee974f802` (Version 1)
+**Previous Package ID:** `0x6d0b40c211463251e6ef066bb45988472d2005424eb403c4e06f6c0986642b89` (Devnet - Deprecated)
+**Last Updated:** 2025-11-23
+**Total Gas Used:** ~0.71 SUI
 
 ## ⚠️ Important Updates
 
-**Package Split & Upgrade (2025-11-16):**
-- Split into TWO packages due to 100 KB size limit:
-  - **Main Package** (this doc): Core bounty, triage, reputation, payout modules
-  - **Communications Package**: Messaging & forum modules → See [MESSAGING_FORUM_INTEGRATION.md](./MESSAGING_FORUM_INTEGRATION.md)
+**Testnet Deployment (2025-11-23):**
+- **Deployed to Testnet** (previously on Devnet)
+- **All IDs have changed** - new package and object IDs
+- **Network change** - Switch RPC to testnet
+- Update ALL package and object IDs in your frontend
 
-**Bounty Program Creation Requirements (Updated 2025-11-16):**
-- Minimum escrow amount increased to **10 SUI**
+**Bounty Program Creation Requirements:**
+- Minimum escrow amount: **0.1 SUI** (reduced from 10 SUI for testnet ease of use)
 - Escrow must be sufficient to cover the **critical tier payout amount**
-- New validation: `escrow >= max(10 SUI, critical_amount)`
+- New validation: `escrow >= max(0.1 SUI, critical_amount)`
 - Error code `1001` (E_ESCROW_TOO_LOW) will be thrown if validation fails
+- **For mainnet:** Increase minimum back to appropriate amount (e.g., 10+ SUI)
 - See [Fee Requirements](#3-fee-requirements) for detailed information
 
 ---
 
 ## Shared Object IDs
 
+⚠️ **Important:** Shared objects are created during package initialization. To obtain these object IDs on testnet:
+
+1. **View the deployment transaction** on Sui Explorer to find created objects
+2. **Check package initialization events**
+3. **Make first contract call** - object IDs will be returned in transaction results
+
+**How to find shared objects:**
+```bash
+# View package on explorer
+https://testnet.suivision.xyz/package/0x8feb35e2c1f3835a795d9d227cfd2b08042c4118b437b53a183037fee974f802
+
+# Or query created objects from deployment
+sui client objects --json | jq '.[] | select(.data.content.type | contains("suiguard"))'
+```
+
 These shared objects must be passed as arguments to transaction functions:
 
-| Object | Object ID | Type |
-|--------|-----------|------|
-| **TriageRegistry** | `0x2fcc5c7b3c0e5829c4db79c11a28a0ecbe59b24e26edfc8b8e63d798d29a3a8d` | `suiguard::triage_types::TriageRegistry` |
-| **BountyRegistry** | `0x449e22d9e7c8e4f0965c58cdd9a65bcdd9e3595e49eb89a7f2ea2e6a44a9e3ee` | `suiguard::bounty_types::BountyRegistry` |
-| **DuplicateRegistry** | `0x4cab08faf99e3f32f093be27cb85bb5a8dccd3b5ac4e73da1cfb9c34bb49896f` | `suiguard::duplicate_registry::DuplicateRegistry` |
-| **NautilusRegistry** | `0x7c2dcfe5e8bf26f0de4d86b74f44c2ce5cf4e04a6e8c03faa0f3cc8b9c94cc53` | `suiguard::nautilus_types::NautilusRegistry` |
-| **Leaderboard** | `0xbe50b13bea60e7695d9ca02447e53c745438abdc9c49025e2514e42a9d773a63` | `suiguard::statistics_types::Leaderboard` |
-| **ArchiveRegistry** | `0xe81019ddc61bcd3f0e10d2918b4fb0fc31fb918b2696c9aaac99acd836c294ad` | `suiguard::archive_types::ArchiveRegistry` |
-| **PlatformStatistics** | `0xefd4e8ba3ab0357eb25760bacf5bb22bb31343ca1c07c5a94b16a8dd194d45ab` | `suiguard::statistics_types::PlatformStatistics` |
+| Object | Type | Object ID |
+|--------|------|-----------|
+| **BountyRegistry** | `suiguard::bounty_registry::ProgramRegistry` | *Obtain from init tx* |
+| **TriageRegistry** | `suiguard::triage_types::TriageRegistry` | *Obtain from init tx* |
+| **DuplicateRegistry** | `suiguard::duplicate_registry::DuplicateRegistry` | *Obtain from init tx* |
+| **ArchiveRegistry** | `suiguard::archive_types::ArchiveRegistry` | *Obtain from init tx* |
+| **Leaderboard** | `suiguard::statistics_types::Leaderboard` | *Obtain from init tx* |
+| **NautilusRegistry** | `suiguard::nautilus_registry::EnclaveRegistry` | *Obtain from init tx* |
+| **PlatformStatistics** | `suiguard::statistics_types::PlatformStatistics` | *Obtain from init tx* |
 
 ---
 
@@ -748,14 +765,14 @@ import { TransactionBlock } from '@mysten/sui.js';
 
 const tx = new TransactionBlock();
 
-const PACKAGE_ID = "0xde6fc70ce19e54062b2363ec83287c7b07f611139e371e09245ce2a93446ce39";
-const BOUNTY_REGISTRY = "0x449e22d9e7c8e4f0965c58cdd9a65bcdd9e3595e49eb89a7f2ea2e6a44a9e3ee";
+const PACKAGE_ID = "0x8feb35e2c1f3835a795d9d227cfd2b08042c4118b437b53a183037fee974f802";
+const BOUNTY_REGISTRY = "OBTAIN_FROM_INIT_TX"; // See Shared Objects section
 
 // Create coin for initial funding
-// IMPORTANT: Escrow must be at least 10 SUI AND must cover the critical tier payout
-// In this example: critical tier = 20 SUI (base 1 SUI * 20x multiplier)
-// So we need minimum 20 SUI escrow
-const [coin] = tx.splitCoins(tx.gas, [tx.pure(20_000_000_000)]); // 20 SUI
+// IMPORTANT: Escrow must be at least 0.1 SUI (testnet) AND must cover the critical tier payout
+// In this example: critical tier = 2 SUI (base 0.1 SUI * 20x multiplier)
+// So we need minimum 2 SUI escrow
+const [coin] = tx.splitCoins(tx.gas, [tx.pure(2_000_000_000)]); // 2 SUI
 
 tx.moveCall({
   target: `${PACKAGE_ID}::bounty_api::create_bounty_program`,
@@ -764,11 +781,11 @@ tx.moveCall({
     tx.pure("My DeFi Project"),
     tx.pure(Array.from(walrusBlobId)),  // Uint8Array of description blob ID
     coin,
-    tx.pure(1_000_000_000),   // critical_amount: 1 SUI (will be * 20x = 20 SUI)
-    tx.pure(500_000_000),     // high_amount: 0.5 SUI
-    tx.pure(250_000_000),     // medium_amount: 0.25 SUI
-    tx.pure(100_000_000),     // low_amount: 0.1 SUI
-    tx.pure(50_000_000),      // informational_amount: 0.05 SUI
+    tx.pure(100_000_000),   // critical_amount: 0.1 SUI (will be * 20x = 2 SUI)
+    tx.pure(1_000_000_000),     // high_amount: 1 SUI
+    tx.pure(1_000_000_000),     // medium_amount: 1 SUI
+    tx.pure(1_000_000_000),     // low_amount: 1 SUI
+    tx.pure(1_000_000_000),      // informational_amount: 1 SUI
     tx.pure(Array.from(walrusBlobId)),  // Walrus blob ID for details
     tx.pure(90),  // duration_days: 90 days
   ],
@@ -781,7 +798,7 @@ const result = await signer.signAndExecuteTransactionBlock({
 
 **Helper Function for Escrow Validation:**
 ```typescript
-const MIN_ESCROW_SUI = 10; // 10 SUI minimum
+const MIN_ESCROW_SUI = 0.1; // 0.1 SUI minimum (TESTNET - use higher for mainnet!)
 const MIN_PAYOUT_SUI = 1;  // 1 SUI minimum per tier
 const SUI_TO_MIST = 1_000_000_000;
 
@@ -826,7 +843,7 @@ function validateBountyCreation(
 }
 
 // Example usage:
-const validation = validateBountyCreation(20, 1, 0.5, 0.25, 0.1, 0.05);
+const validation = validateBountyCreation(2, 0.1, 1, 1, 1, 1);
 if (!validation.valid) {
   console.error('Validation failed:', validation.error);
   // Handle error - don't submit transaction
@@ -842,8 +859,8 @@ import { TransactionBlock } from '@mysten/sui.js';
 
 const tx = new TransactionBlock();
 
-const PACKAGE_ID = "0xde6fc70ce19e54062b2363ec83287c7b07f611139e371e09245ce2a93446ce39";
-const BOUNTY_REGISTRY = "0x449e22d9e7c8e4f0965c58cdd9a65bcdd9e3595e49eb89a7f2ea2e6a44a9e3ee";
+const PACKAGE_ID = "0x8feb35e2c1f3835a795d9d227cfd2b08042c4118b437b53a183037fee974f802";
+const BOUNTY_REGISTRY = "OBTAIN_FROM_INIT_TX"; // See Shared Objects section
 const CLOCK = "0x6"; // Sui system clock
 
 // Create submission fee coin (0.1 SUI)
@@ -882,8 +899,8 @@ import { TransactionBlock } from '@mysten/sui.js';
 
 const tx = new TransactionBlock();
 
-const PACKAGE_ID = "0xde6fc70ce19e54062b2363ec83287c7b07f611139e371e09245ce2a93446ce39";
-const BOUNTY_REGISTRY = "0x449e22d9e7c8e4f0965c58cdd9a65bcdd9e3595e49eb89a7f2ea2e6a44a9e3ee";
+const PACKAGE_ID = "0x8feb35e2c1f3835a795d9d227cfd2b08042c4118b437b53a183037fee974f802";
+const BOUNTY_REGISTRY = "OBTAIN_FROM_INIT_TX"; // See Shared Objects section
 const CLOCK = "0x6";
 
 tx.moveCall({
@@ -909,8 +926,8 @@ import { TransactionBlock } from '@mysten/sui.js';
 
 const tx = new TransactionBlock();
 
-const PACKAGE_ID = "0xde6fc70ce19e54062b2363ec83287c7b07f611139e371e09245ce2a93446ce39";
-const BOUNTY_REGISTRY = "0x449e22d9e7c8e4f0965c58cdd9a65bcdd9e3595e49eb89a7f2ea2e6a44a9e3ee";
+const PACKAGE_ID = "0x8feb35e2c1f3835a795d9d227cfd2b08042c4118b437b53a183037fee974f802";
+const BOUNTY_REGISTRY = "OBTAIN_FROM_INIT_TX"; // See Shared Objects section
 const CLOCK = "0x6";
 
 tx.moveCall({
@@ -962,11 +979,12 @@ const unsubscribe = await client.subscribeEvent({
 ```typescript
 import { SuiClient } from '@mysten/sui.js/client';
 
-const client = new SuiClient({ url: 'https://fullnode.devnet.sui.io' });
+const client = new SuiClient({ url: 'https://fullnode.testnet.sui.io' });
 
 // Get all bounty programs from registry
+const BOUNTY_REGISTRY = "OBTAIN_FROM_INIT_TX"; // See Shared Objects section
 const bountyRegistry = await client.getObject({
-  id: "0x449e22d9e7c8e4f0965c58cdd9a65bcdd9e3595e49eb89a7f2ea2e6a44a9e3ee",
+  id: BOUNTY_REGISTRY,
   options: {
     showContent: true,
     showType: true,
@@ -993,7 +1011,7 @@ for (const field of dynamicFields.data) {
 ```typescript
 import { SuiClient } from '@mysten/sui.js/client';
 
-const client = new SuiClient({ url: 'https://fullnode.devnet.sui.io' });
+const client = new SuiClient({ url: 'https://fullnode.testnet.sui.io' });
 
 // Get bug report object
 const report = await client.getObject({
@@ -1042,13 +1060,14 @@ for (const field of dynamicFields.data) {
 
 ### 3. Fee Requirements
 
-**Bounty Program Creation:**
-- Minimum escrow: **10 SUI** (10_000_000_000 MIST)
+**Bounty Program Creation (Testnet):**
+- Minimum escrow: **0.1 SUI** (100_000_000 MIST) - **reduced for testnet ease of use**
 - Escrow must be **greater than or equal to the critical tier payout amount**
-  - Example: If critical tier is set to 5 SUI, escrow must be at least 10 SUI (the minimum)
-  - Example: If critical tier is set to 50 SUI, escrow must be at least 50 SUI
+  - Example: If critical tier is set to 0.1 SUI, escrow must be at least 0.1 SUI
+  - Example: If critical tier is set to 5 SUI, escrow must be at least 5 SUI
 - Minimum payout amount per tier: **1 SUI** (1_000_000_000 MIST)
 - Tier order validation: Critical > High > Medium > Low
+- ⚠️ **For Mainnet:** Increase minimum escrow to appropriate amount (e.g., 10+ SUI)
 
 **Bug Report Submission:**
 - Submission fee: **0.1 SUI** (100_000_000 MIST) - returned if report is accepted
@@ -1146,21 +1165,29 @@ console.log('Report Content:', reportData);
 
 ## Support & Resources
 
-- **Package Explorer:** https://suiscan.xyz/devnet/object/0xde6fc70ce19e54062b2363ec83287c7b07f611139e371e09245ce2a93446ce39
+- **Package Explorer (Testnet):** https://testnet.suivision.xyz/package/0x8feb35e2c1f3835a795d9d227cfd2b08042c4118b437b53a183037fee974f802
+- **SuiScan (Testnet):** https://suiscan.xyz/testnet/object/0x8feb35e2c1f3835a795d9d227cfd2b08042c4118b437b53a183037fee974f802
 - **Sui TypeScript SDK:** https://sdk.mystenlabs.com/typescript
 - **Walrus Documentation:** https://docs.walrus.site
 - **Sui RPC Documentation:** https://docs.sui.io/references/sui-api
+- **Testnet Faucet:** https://faucet.sui.io
 
 ---
 
 ## Changelog
 
-**Version 1.0 - 2025-11-10**
-- Initial deployment to devnet
-- Refactored BugReport struct with dynamic fields for scalability
-- 45 modules deployed successfully
+**Version 1.0 - 2025-11-23 (Testnet)**
+- Deployed to Sui Testnet (moved from Devnet)
+- **Minimum bounty escrow reduced to 0.1 SUI** (from 10 SUI) for testnet ease of use
+- 47 modules in main package
+- 10 modules in communications package
 - All core features operational
+- All package and object IDs updated
+
+**Version 1.0 - 2025-11-20 (Devnet)**
+- Redeployed to devnet after network reset
+- Previous deployment (deprecated - moved to testnet)
 
 ---
 
-*Generated on 2025-11-10 for SuiGuard v1.0*
+*Generated on 2025-11-23 for SuiGuard v1.0 Testnet*
